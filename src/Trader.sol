@@ -2,12 +2,16 @@
 pragma solidity ^0.8.19;
 
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
+import { PoolKey } from "v4-core/types/PoolKey.sol";
+import { Currency } from "v4-core/types/Currency.sol";
+import { TickMath } from "v4-core/libraries/TickMath.sol";
+import { BalanceDelta } from "v4-core/types/BalanceDelta.sol";
 // import "v4-core/interfaces/IHookFeeManager.sol";
 // import "v4-periphery/base/PeripheryPayments.sol";
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "openzeppelin-contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-contracts/access/Ownable.sol";
+import "openzeppelin-contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title TradingBot

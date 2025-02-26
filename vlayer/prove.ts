@@ -1,93 +1,80 @@
 import { createVlayerClient } from "@vlayer/sdk";
-import nftSpec from "../out/ExampleNFT.sol/ExampleNFT";
-import tokenSpec from "../out/ExampleToken.sol/ExampleToken";
-import { isAddress } from "viem";
+import proverSpec from "../out/ProfitProver.sol/ProfitProver";
+import verifierSpec from "../out/ProfitVerifier.sol/ProfitVerifier";
 import {
-  getConfig,
   createContext,
   deployVlayerContracts,
-  waitForContractDeploy,
+  getConfig,
+  waitForTransactionReceipt,
 } from "@vlayer/sdk/config";
-
-import proverSpec from "../out/SimpleProver.sol/SimpleProver";
-import verifierSpec from "../out/SimpleVerifier.sol/SimpleVerifier";
+import { type Address } from "viem";
 
 const config = getConfig();
-const {
-  chain,
-  ethClient,
-  account: john,
-  proverUrl,
-  confirmations,
-} = await createContext(config);
+const { ethClient, account, proverUrl } = await createContext(config);
 
-const INITIAL_TOKEN_SUPPLY = BigInt(10_000_000);
+declare const process: {
+  env: {
+    PROVER_START_BLOCK: bigint;
+    PROVER_END_BLOCK: bigint | "latest";
+    PROVER_TRAVEL_RANGE: bigint;
+    PROVER_ERC20_CONTRACT_ADDR: string;
+    PROVER_ERC20_HOLDER_ADDR: string;
+    PROVER_STEP: bigint;
+  };
+};
 
-const tokenDeployTransactionHash = await ethClient.deployContract({
-  abi: tokenSpec.abi,
-  bytecode: tokenSpec.bytecode.object,
-  account: john,
-  args: [john.address, INITIAL_TOKEN_SUPPLY],
-});
+const useLatestBlock = process.env.PROVER_END_BLOCK === "latest";
+const endBlock = useLatestBlock
+  ? await ethClient.getBlockNumber()
+  : BigInt(process.env.PROVER_END_BLOCK);
 
-const tokenAddress = await waitForContractDeploy({
-  hash: tokenDeployTransactionHash,
-});
+const startBlock = useLatestBlock
+  ? endBlock - BigInt(process.env.PROVER_TRAVEL_RANGE)
+  : BigInt(process.env.PROVER_START_BLOCK);
 
-const nftDeployTransactionHash = await ethClient.deployContract({
-  abi: nftSpec.abi,
-  bytecode: nftSpec.bytecode.object,
-  account: john,
-  args: [],
-});
+const tokenOwner = process.env.PROVER_ERC20_HOLDER_ADDR as Address;
+const usdcTokenAddr = process.env.PROVER_ERC20_CONTRACT_ADDR as Address;
 
-const nftContractAddress = await waitForContractDeploy({
-  hash: nftDeployTransactionHash,
-});
+const step = BigInt(process.env.PROVER_STEP);
 
 const { prover, verifier } = await deployVlayerContracts({
   proverSpec,
   verifierSpec,
-  proverArgs: [tokenAddress],
-  verifierArgs: [nftContractAddress],
+  proverArgs: [usdcTokenAddr, startBlock, endBlock, step],
+  verifierArgs: [],
   env: config.deployConfig,
 });
 
-console.log("Proving...");
 const vlayer = createVlayerClient({
   url: proverUrl,
 });
 
-const hash = await vlayer.prove({
+const provingHash = await vlayer.prove({
   address: prover,
   proverAbi: proverSpec.abi,
-  functionName: "balance",
-  args: [john.address],
-  chainId: chain.id,
+  functionName: "calculateProfit",
+  args: [tokenOwner],
+  chainId: ethClient.chain.id,
   token: config.token,
 });
-const result = await vlayer.waitForProvingResult({ hash });
-const [proof, owner, balance] = result;
 
-if (!isAddress(owner)) {
-  throw new Error(`${owner} is not a valid address`);
-}
+console.log("Waiting for proving result: ");
 
-console.log("Proof result:", result);
+const result = await vlayer.waitForProvingResult({ hash: provingHash });
+
+console.log("Proof:", result[0]);
+console.log("Verifying...");
 
 const verificationHash = await ethClient.writeContract({
   address: verifier,
   abi: verifierSpec.abi,
-  functionName: "claimWhale",
-  args: [proof, owner, balance],
-  account: john,
+  functionName: "claim",
+  args: result,
+  account,
 });
 
-const receipt = await ethClient.waitForTransactionReceipt({
+const receipt = await waitForTransactionReceipt({
   hash: verificationHash,
-  confirmations,
-  retryCount: 60,
-  retryDelay: 1000,
 });
 
 console.log(`Verification result: ${receipt.status}`);
