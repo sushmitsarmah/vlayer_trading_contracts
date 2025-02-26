@@ -1,0 +1,10 @@
+@uniswap/v4-core/=lib/v4-core/
+forge-gas-snapshot/=lib/v4-core/lib/forge-gas-snapshot/src/
+forge-std-1.9.4/src/=dependencies/forge-std-1.9.4/src/
+forge-std/=dependencies/forge-std-1.9.4/src/
+openzeppelin-contracts/=dependencies/@openzeppelin-contracts-5.0.1/
+permit2/=lib/v4-periphery/lib/permit2/
+risc0-ethereum-1.2.0/=dependencies/risc0-ethereum-1.2.0/
+solmate/=lib/v4-core/lib/solmate/
+v4-periphery/=lib/v4-periphery/
+vlayer-0.1.0/=dependencies/vlayer-0.1.0-nightly-20250221-96f82e4/src/

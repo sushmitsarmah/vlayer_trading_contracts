@@ -1,0 +1,27 @@
+[[dependencies]]
+name = "@openzeppelin-contracts"
+version = "5.0.1"
+url = "https://soldeer-revisions.s3.amazonaws.com/@openzeppelin-contracts/5_0_1_22-01-2024_13:14:01_contracts.zip"
+checksum = "c256cbf6f5f38d3b65c7528bbffb530d0bdb818a20c9d5b61235a829202d7df7"
+integrity = "0dabb06b7ce9a5fec6e97a174c230829260e5843d4f7e22931c51385f4ede155"
+
+[[dependencies]]
+name = "forge-std"
+version = "1.9.4"
+url = "https://soldeer-revisions.s3.amazonaws.com/forge-std/1_9_4_25-10-2024_14:36:59_forge-std-1.9.zip"
+checksum = "b5be24beb5e4dab5e42221b2ad1288b64c826bee5ee71b6159ba93ffe86f14d4"
+integrity = "3874463846ab995a6a9a88412913cacec6144f7605daa1af57c2d8bf3f210b13"
+
+[[dependencies]]
+name = "risc0-ethereum"
+version = "1.2.0"
+url = "https://github.com/vlayer-xyz/risc0-ethereum/releases/download/v1.2.0-soldeer/contracts.zip"
+checksum = "7af9a4b372f0bc2b930f6648978c4e387d232121e82009e96e79288752323ce2"
+integrity = "2babfa20fb6e2eb1f358f9fa67d279d75cd0f9c921dee11a31b5fb16343e90c8"
+
+[[dependencies]]
+name = "vlayer"
+version = "0.1.0-nightly-20250221-96f82e4"
+url = "https://soldeer-revisions.s3.amazonaws.com/vlayer/0_1_0-nightly-20250221-96f82e4_21-02-2025_09:23:17_vlayer.zip"
+checksum = "e8cd4dad742e3571c0d87eb1e7e130fa5364af181ddb872b0474b4d7889037e7"
+integrity = "a78f4528d52483b668624764622cd0bbadd616af97d5b6a84f77bf74eb0f2a0f"
