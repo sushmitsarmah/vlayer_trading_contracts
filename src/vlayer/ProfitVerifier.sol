@@ -18,7 +18,7 @@ contract ProfitVerifier is Verifier {
     }
 
     // We're now taking the profit as an *int256* since profit can be negative (loss).  Adjust the type accordingly.
-    function claim(Proof calldata _proof, address _claimer, int256 _profit) public onlyVerified(prover, PROFIT_PROVER_FUNCTION_SELECTOR) {
+    function claim(Proof calldata _proof, address _claimer, int256 _profit) public onlyVerified(prover, ProfitProver.calculateProfit.selector) {
         require(!claimed[_claimer], "Already claimed");
 
         // Define the profit threshold to receive the reward.  Adjust to your desired value.

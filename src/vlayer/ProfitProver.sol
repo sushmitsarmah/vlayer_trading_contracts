@@ -10,18 +10,22 @@ contract ProfitProver is Prover {
     uint256 public immutable STARTING_BLOCK;
     uint256 public immutable ENDING_BLOCK;
     uint256 public immutable STEP;
+    uint256 public immutable FEE_PERCENTAGE = 5;
+
+    event TransactionProcessed(address indexed owner, uint256 blockNumber, uint256 amount, string transactionType);
+    event ProfitCalculated(address indexed owner, uint256 profit);
+
+    struct Transaction {
+        uint256 blockNumber;
+        uint256 amount; // Amount of token bought or sold. Positive for buys, negative for sells
+        string transactionType; // "buy" or "sell"
+    }
 
     constructor(IERC20 _token, uint256 _startBlockNo, uint256 _endingBlockNo, uint256 _step) {
         TOKEN = _token;
         STARTING_BLOCK = _startBlockNo;
         ENDING_BLOCK = _endingBlockNo;
         STEP = _step;
-    }
-
-    struct Transaction {
-        uint256 blockNumber;
-        uint256 amount; // Amount of token bought or sold. Positive for buys, negative for sells
-        string transactionType; // "buy" or "sell"
     }
 
     function calculateProfit(address _owner) public returns (Proof memory, address, int256) {
@@ -36,15 +40,15 @@ contract ProfitProver is Prover {
             Transaction memory tx = transactions[i];
             if (keccak256(bytes(tx.transactionType)) == keccak256(bytes("buy"))) {
                 // Apply fee to buy amount
-                uint256 feeAmount = tx.amount.mul(FEE_PERCENTAGE).div(10000);
-                buyCost = buyCost.add(tx.amount).add(feeAmount);
+                uint256 feeAmount = tx.amount * FEE_PERCENTAGE / 10000;
+                buyCost = buyCost + tx.amount - feeAmount;
 
                 emit TransactionProcessed(_owner, tx.blockNumber, tx.amount, tx.transactionType);
 
             } else if (keccak256(bytes(tx.transactionType)) == keccak256(bytes("sell"))) {
                 // Apply fee to sell amount
-                uint256 feeAmount = tx.amount.mul(FEE_PERCENTAGE).div(10000);
-                sellRevenue = sellRevenue.add(tx.amount).sub(feeAmount);
+                uint256 feeAmount = tx.amount * FEE_PERCENTAGE / 10000;
+                sellRevenue = sellRevenue + tx.amount - feeAmount;
 
                 emit TransactionProcessed(_owner, tx.blockNumber, tx.amount, tx.transactionType);
 
@@ -72,13 +76,13 @@ contract ProfitProver is Prover {
 
         transactions[0] = Transaction({
             blockNumber: STARTING_BLOCK + 1,
-            amount: 100 * 10**TOKEN.decimals(),
+            amount: 100,
             transactionType: "buy"
         });
 
         transactions[1] = Transaction({
             blockNumber: ENDING_BLOCK - 1,
-            amount: 120 * 10**TOKEN.decimals(),
+            amount: 120,
             transactionType: "sell"
         });
 
